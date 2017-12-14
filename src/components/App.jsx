@@ -1,12 +1,16 @@
 class App extends React.Component {
+
   constructor(props) {
     super(props);
     this.state = {
       currentVideo: exampleVideoData[0],
       allVideos: exampleVideoData
+      
     };
     this.handleListItemTitleClick = this.handleListItemTitleClick.bind(this);
-  
+    console.log('hi');
+    
+    this.handleSearchClick = this.handleSearchClick.bind(this);
   }
   
   handleListItemTitleClick(video) {
@@ -14,6 +18,36 @@ class App extends React.Component {
       currentVideo: video
     });
   }
+  
+  handleSearchClick() {
+    //SETSTATE allVideos -> getVideos --> query = text input.value
+    let query = $('.form-control').val();
+    this.getVideos(query);
+    $('.form-control').val('');
+  }
+
+  getVideos(query, maxResults = 6) {
+    //run youtube api ajax call
+    $.ajax({
+      url: 'https://www.googleapis.com/youtube/v3/search',
+      type: 'GET',
+      // do we need to specify "window"?
+      data: {key: window.YOUTUBE_API_KEY, q: query, part: 'snippet', maxResults: maxResults},
+      dataType: 'json',
+      success: (data) => {
+        console.log('success ', data.items);
+        this.setState({
+          allVideos: data.items.slice(1),
+          currentVideo: data.items[0]
+        });
+      },
+      
+      error: (data) => {
+        console.log('fail', data);
+      }
+    });
+  }
+  
 
   
   render() {
@@ -21,7 +55,7 @@ class App extends React.Component {
       <div>
       <nav className="navbar">
         <div className="col-md-6 offset-md-3">
-          <Search />
+          <Search listener={this.handleSearchClick}/>
         </div>
       </nav>
       <div className="row">
@@ -45,6 +79,7 @@ class App extends React.Component {
 window.App = App;
 
 ReactDOM.render(<App />, document.getElementById('app'));
+
 
 
 
